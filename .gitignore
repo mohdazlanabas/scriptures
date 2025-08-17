@@ -1,0 +1,15 @@
+
+# Go build
+/out/
+api
+worker
+
+# DB
+*.db
+
+# Node
+web/node_modules/
+web/dist/
+
+# Env
+.env

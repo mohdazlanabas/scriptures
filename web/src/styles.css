@@ -1,0 +1,8 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.card{ @apply bg-white border border-gray-200 rounded-xl p-4 shadow-sm; }
+.badge{ @apply inline-block text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-700; }
+.container{ @apply max-w-5xl mx-auto px-4; }

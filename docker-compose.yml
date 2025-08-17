@@ -1,0 +1,23 @@
+
+version: "3.9"
+services:
+  api:
+    build: .
+    environment:
+      - DATABASE_URL=file:/data/scripture.db?cache=shared&_fk=1
+      - PORT=8080
+    volumes:
+      - dbdata:/data
+    ports:
+      - "8080:8080"
+    depends_on:
+      - worker
+  worker:
+    build: .
+    command: ["/app/worker"]
+    environment:
+      - DATABASE_URL=file:/data/scripture.db?cache=shared&_fk=1
+    volumes:
+      - dbdata:/data
+volumes:
+  dbdata: {}
