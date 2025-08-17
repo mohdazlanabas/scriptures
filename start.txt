@@ -1,0 +1,8 @@
+From the root key in:
+
+./scripts/run_worker_local.sh
+./scripts/run_api_local.sh
+
+From the web key in:
+
+./scripts/api_worker_local.sh  

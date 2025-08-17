@@ -15,9 +15,29 @@ type Daily = {
 export default function Today() {
   const [data, setData] = useState<Daily | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [visitorCount, setVisitorCount] = useState<number | null>(null)
+  const [userDate, setUserDate] = useState<string>("")
+  const [userLocation, setUserLocation] = useState<string>("Loading...")
 
   useEffect(() => {
     fetch('/api/today').then(r => r.json()).then(setData).catch(() => setErr('Not ready'))
+    fetch('/api/visitors').then(r => r.json()).then(d => setVisitorCount(d.count)).catch(() => setVisitorCount(null))
+    setUserDate(new Date().toLocaleString())
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const { latitude, longitude } = pos.coords
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+            .then(r => r.json())
+            .then(loc => setUserLocation(loc.address?.city || loc.address?.town || loc.address?.village || loc.address?.state || loc.address?.country || 'Unknown'))
+            .catch(() => setUserLocation('Unknown'))
+        },
+        () => setUserLocation('Unknown'),
+        { timeout: 5000 }
+      )
+    } else {
+      setUserLocation('Unknown')
+    }
   }, [])
 
   return (
@@ -48,6 +68,11 @@ export default function Today() {
           </div>
         </>
       )}
+      <footer className="mt-10 pt-6 border-t text-sm text-gray-500 flex flex-col items-center gap-1">
+        <div>User date: {userDate}</div>
+        <div>Location: {userLocation}</div>
+        <div>Visitor count: {visitorCount !== null ? visitorCount : '...'}</div>
+      </footer>
     </div>
   )
 }
