@@ -66,12 +66,26 @@ export default function Today() {
             <h4 className="font-semibold mb-1">Common Ground</h4>
             <p>{data.summary}</p>
           </div>
+
+          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded">
+            <h4 className="font-semibold mb-3">Copyable Summary</h4>
+            <div className="space-y-2 text-sm font-mono">
+              <div><strong>Verse:</strong></div>
+              <div className="ml-4">• <strong>Quran ({data.quran?.ref}):</strong> {data.quran?.text}</div>
+              <div className="ml-4">• <strong>Torah ({data.torah?.ref}):</strong> {data.torah?.text}</div>
+              <div className="ml-4">• <strong>Bible ({data.bible?.ref}):</strong> {data.bible?.text}</div>
+              <div className="ml-4">• <strong>Human Design ({data.human_design?.ref}):</strong> {data.human_design?.text}</div>
+              <div><strong>Result:</strong> {data.area}</div>
+              <div><strong>Common Ground:</strong> {data.summary}</div>
+            </div>
+          </div>
         </>
       )}
       <footer className="mt-10 pt-6 border-t text-sm text-gray-500 flex flex-col items-center gap-1">
         <div>User date: {userDate}</div>
         <div>Location: {userLocation}</div>
         <div>Visitor count: {visitorCount !== null ? visitorCount : '...'}</div>
+        <div>Creator: ioazlan01@gmail.com</div>
       </footer>
     </div>
   )
