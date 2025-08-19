@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS daily_payloads (
     date TEXT PRIMARY KEY,
     payload_json TEXT NOT NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS visitor_stats (
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS visitor_stats (
 );
 
 CREATE TABLE IF NOT EXISTS verses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     source TEXT NOT NULL,         -- 'quran', 'torah', 'bible', 'human_design'
     ref TEXT NOT NULL,
     text TEXT NOT NULL,

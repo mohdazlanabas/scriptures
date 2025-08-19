@@ -10,7 +10,7 @@ Scripture Daily is a full-stack web application that delivers daily passages fro
 - **Automated verse matching** across Quran, Torah, Bible, and Human Design
 - **Visitor counting** and analytics
 - **User location and date display**
-- **Simple REST API** (Go, SQLite)
+- **Simple REST API** (Go, PostgreSQL)
 - **Modern React frontend** (Vite, Tailwind CSS)
 - **Dockerized** for easy deployment
 
@@ -25,7 +25,7 @@ Scripture Daily is a full-stack web application that delivers daily passages fro
     - `GET /api/post/:date` – Returns scripture payload for a specific date (YYYY-MM-DD)
     - `GET /api/visitors` – Returns current visitor count
     - `GET /healthz` – Health check
-  - Reads from a SQLite database (`daily_payloads` and `verses` tables)
+  - Reads from a PostgreSQL database (`daily_payloads` and `verses` tables)
   - Handles CORS for API endpoints
 
 - **Worker Service** (`/backend/cmd/worker/main.go`):
@@ -34,7 +34,7 @@ Scripture Daily is a full-stack web application that delivers daily passages fro
   - **Database seeding**: Populates the verses table with themed scripture collections
   - Runs as a one-off job to generate daily payloads
 
-- **Database**:
+- **Database** (PostgreSQL):
   - **`daily_payloads`** table: Stores daily scripture payloads
   - **`verses` table**: Contains verses from all sources, tagged by themes
   - **`visitor_stats` table**: Tracks total site visitors
@@ -42,7 +42,7 @@ Scripture Daily is a full-stack web application that delivers daily passages fro
 
 - **Configuration**:
   - Environment variables:
-    - `DATABASE_URL` (default: `file:./scripture.db?cache=shared&_fk=1`)
+    - `DATABASE_URL` (default: `postgres://postgres:postgres@localhost:5432/scripture?sslmode=disable`)
     - `PORT` (default: `8080`)
     - `BASE_URL` (default: `http://localhost:8080`)
 
@@ -98,12 +98,12 @@ Example response:
 CREATE TABLE IF NOT EXISTS daily_payloads (
     date TEXT PRIMARY KEY,
     payload_json TEXT NOT NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Scripture verses with theme tags
 CREATE TABLE IF NOT EXISTS verses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     source TEXT NOT NULL,         -- 'quran', 'torah', 'bible', 'human_design'
     ref TEXT NOT NULL,
     text TEXT NOT NULL,
@@ -137,14 +137,14 @@ The system automatically selects themed verses each day:
 
 ## Tech Stack
 - Go 1.22 (API, worker)
-- SQLite (database)
+- PostgreSQL (database)
 - React 18, Vite, Tailwind CSS (frontend)
 - Docker, Docker Compose (deployment)
 
 ---
 
 ## Environment Variables
-- `DATABASE_URL` – SQLite DSN (default: `file:./scripture.db?cache=shared&_fk=1`)
+- `DATABASE_URL` – Postgres DSN (default: `postgres://postgres:postgres@localhost:5432/scripture?sslmode=disable`)
 - `PORT` – API port (default: `8080`)
 - `BASE_URL` – Base URL for API (default: `http://localhost:8080`)
 
@@ -152,6 +152,9 @@ The system automatically selects themed verses each day:
 
 ## Run locally
 ```bash
+# Ensure PostgreSQL is running (or run docker compose below)
+# Default DSN expects: user=postgres password=postgres db=scripture host=localhost port=5432
+
 # Start the worker to seed database and generate today's payload
 ./scripts/run_worker_local.sh
 

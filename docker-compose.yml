@@ -1,23 +1,35 @@
 
 version: "3.9"
 services:
-  api:
-    build: .
+  db:
+    image: postgres:16-alpine
     environment:
-      - DATABASE_URL=file:/data/scripture.db?cache=shared&_fk=1
-      - PORT=8080
+      - POSTGRES_DB=scripture
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     volumes:
-      - dbdata:/data
+      - dbdata:/var/lib/postgresql/data
     ports:
-      - "8080:8080"
-    depends_on:
-      - worker
+      - "5432:5432"
+
   worker:
     build: .
     command: ["/app/worker"]
     environment:
-      - DATABASE_URL=file:/data/scripture.db?cache=shared&_fk=1
-    volumes:
-      - dbdata:/data
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/scripture?sslmode=disable
+    depends_on:
+      - db
+
+  api:
+    build: .
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/scripture?sslmode=disable
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - worker
+
 volumes:
   dbdata: {}

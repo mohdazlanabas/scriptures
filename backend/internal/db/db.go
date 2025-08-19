@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type Daily struct {
@@ -21,11 +21,10 @@ type Daily struct {
 }
 
 func Connect(dsn string) *sql.DB {
-	db, err := sql.Open("sqlite", dsn)
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		log.Fatalf("db open error: %v", err)
 	}
-	_, _ = db.Exec(`PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;`)
 	ensureMigrated(db)
 	return db
 }
@@ -34,14 +33,14 @@ func ensureMigrated(db *sql.DB) {
 	_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS daily_payloads (
         date TEXT PRIMARY KEY,
         payload_json TEXT NOT NULL,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );`)
 	_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS visitor_stats (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         count INTEGER NOT NULL DEFAULT 0
     );`)
 	_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS verses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         source TEXT NOT NULL,         -- 'quran', 'torah', 'bible', 'human_design'
         ref TEXT NOT NULL,
         text TEXT NOT NULL,
@@ -52,7 +51,7 @@ func ensureMigrated(db *sql.DB) {
 
 func GetDailyPayloadDate(dbh *sql.DB, date string) (*Daily, error) {
 	var js string
-	err := dbh.QueryRow(`SELECT payload_json FROM daily_payloads WHERE date=?`, date).Scan(&js)
+	err := dbh.QueryRow(`SELECT payload_json FROM daily_payloads WHERE date=$1`, date).Scan(&js)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("not_found")
@@ -67,7 +66,8 @@ func GetDailyPayloadDate(dbh *sql.DB, date string) (*Daily, error) {
 }
 
 func EnsureVisitorStats(db *sql.DB) {
-	_, _ = db.Exec(`INSERT OR IGNORE INTO visitor_stats (id, count) VALUES (1, 0);`)
+	_, _ = db.Exec(`INSERT INTO visitor_stats (id, count) VALUES (1, 0)
+        ON CONFLICT (id) DO NOTHING;`)
 }
 
 func IncrementVisitorCount(db *sql.DB) error {
@@ -129,7 +129,7 @@ func GetRandomTopic(db *sql.DB) (string, error) {
 }
 
 func GetVerseByTopicAndSource(db *sql.DB, source, topic string) (ref, text string, err error) {
-	err = db.QueryRow(`SELECT ref, text FROM verses WHERE source = ? AND topics LIKE ? ORDER BY RANDOM() LIMIT 1`, source, "%"+topic+"%").Scan(&ref, &text)
+	err = db.QueryRow(`SELECT ref, text FROM verses WHERE source = $1 AND topics LIKE $2 ORDER BY RANDOM() LIMIT 1`, source, "%"+topic+"%").Scan(&ref, &text)
 	return
 }
 
