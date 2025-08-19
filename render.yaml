@@ -1,0 +1,36 @@
+# render.yaml
+databases:
+  - name: scripture-db
+    plan: free  # or starter for more storage
+
+services:
+  - type: web
+    name: scripture-api
+    env: docker             # uses your Dockerfile
+    plan: starter
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DATABASE_URL   # Render injects the full PG URL
+        fromDatabase:
+          name: scripture-db
+          property: connectionString
+
+  - type: static
+    name: scripture-web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: web/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://scripture-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /.*
+        destination: /index.html
+
+cronJobs:
+  - name: daily-build
+    schedule: "0 23 * * *"   # 23:00 UTC = 07:00 MYT
+    serviceName: scripture-api
+    command: "./worker"
