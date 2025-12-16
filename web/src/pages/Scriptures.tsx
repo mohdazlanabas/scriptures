@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type Passage = { ref: string; text: string; translation?: string }
 type Daily = {
@@ -12,7 +12,7 @@ type Daily = {
   summary: string
 }
 
-export default function Today() {
+export default function Scriptures() {
   const [data, setData] = useState<Daily | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [visitorCount, setVisitorCount] = useState<number | null>(null)
@@ -43,16 +43,32 @@ export default function Today() {
   return (
     <div className="container py-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold">Scripture Daily</h1>
-        <p className="text-sm text-gray-600">Qur'an • Torah • Bible • Human Design</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <a href="/" className="text-blue-600 hover:text-blue-700 text-sm mb-2 inline-block">
+              ← Back to Home
+            </a>
+            <h1 className="text-2xl font-bold">Scripture Daily</h1>
+            <p className="text-sm text-gray-600">Qur'an • Torah • Bible • Human Design</p>
+          </div>
+          <a
+            href="/subscribe"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm"
+          >
+            Subscribe
+          </a>
+        </div>
       </header>
 
       {err && <div className="p-3 bg-amber-50 border border-amber-200 rounded">{err}</div>}
       {data && (
         <>
-          <div className="mb-2 text-sm text-gray-700">
-            <span className="badge mr-2">{data.date}</span>
-            <span className="badge">{data.area}</span>
+          <div className="mb-4 flex justify-between items-center">
+            <div className="text-lg">
+              <span className="text-gray-600">Topic Of Today: </span>
+              <span className="font-bold uppercase">{data.area}</span>
+            </div>
+            <div className="text-sm text-gray-600">{data.date}</div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -85,7 +101,8 @@ export default function Today() {
         <div>User date: {userDate}</div>
         <div>Location: {userLocation}</div>
         <div>Visitor count: {visitorCount !== null ? visitorCount : '...'}</div>
-        <div>Creator: ioazlan01@gmail.com</div>
+        <div>Developed by Net1io.com</div>
+        <div>Copyright (C) Reserved 2025</div>
       </footer>
     </div>
   )
